@@ -23,12 +23,18 @@ public class TCPClient {
 			DataOutputStream out =new DataOutputStream( s.getOutputStream());
 			Scanner scanner = new Scanner(System.in);
 
-			while((comando = scanner.nextLine()) != null){
-				out.flush();
+			while(true){
+				comando = scanner.nextLine();
 				out.writeUTF(comando);
 				
 				data = in.readUTF();
 				System.out.println(data);
+				
+				/*close client*/
+				if (comando.contains("exit")){
+					System.out.println("Encerrando cliente...");
+					s.close();
+				}
 			}
 		}
 		catch (UnknownHostException e){

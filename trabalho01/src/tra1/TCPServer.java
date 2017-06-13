@@ -28,6 +28,7 @@ class Connection extends Thread {
 			clientSocket = aClientSocket;
 			in = new DataInputStream( clientSocket.getInputStream());
 			out =new DataOutputStream( clientSocket.getOutputStream());
+			
 			this.start();
 		} 
 		catch(IOException e) {
@@ -35,47 +36,56 @@ class Connection extends Thread {
 		}
 	}
 	public void run(){
-		try {			               
-			String data = in.readUTF();	  
-			
-			if(data.contains("mkdir")){
-				System.out.println("Cliente: " + clientSocket + " | Tarefa: mkdir");
-				String directoryName = data.replaceAll("mkdir", "");
+		
+		/*Configuration UFOPServer for new Client*/
+		String mainPath = "UFOPDrive/";
+		String clientPath = mainPath + clientSocket.getPort() + "/";
+		new File(clientPath).mkdirs();
+		
+		try {
+			while(true){
+				String data = in.readUTF();	  
 				
-				new File(directoryName).mkdir();
-				out.writeUTF("Diretorio:" + directoryName + " criado");
-				out.flush();
-				
-			}
-			else if (data.contains("lsdir")){
-				System.out.println("Cliente: " + clientSocket + " | Tarefa: lsdir");
-				
-				StringBuilder resposta = new StringBuilder();
-				
-				/*get data from current directory and create string*/
-				File dir = new File(".");
-				File[] files = dir.listFiles();
-			    for (File file : files) {
-			        if (file.isDirectory()) {
-			            resposta.append("\ndiretorio: \n");
-			        } else {
-			        	resposta.append("\n     arquivo: \n");
-			        }
-			        resposta.append(file.getCanonicalPath());
-			    }
-			    
-			    /*Send answer to client*/
-				out.writeUTF(resposta.toString());
-		        out.flush();
-			}
-			else if (data.contains("sendfile")){
-				out.writeUTF("Enviar arquivo para o servidor");
-			}
-			else if (data.contains("exit")){
-				out.writeUTF("terminando execucao");
-			}
-			else {
-				out.writeUTF("Comando nao reconhecido pelo servidor");
+				if(data.contains("mkdir")){
+					System.out.println("Cliente: " + clientSocket + " | Tarefa: mkdir");
+					String directoryName = data.replaceAll("mkdir", "");
+					
+					new File(clientPath + directoryName).mkdir();
+					out.writeUTF("Diretorio:" + directoryName + " criado");
+					out.flush();
+					
+				}
+				else if (data.contains("lsdir")){
+					System.out.println("Cliente: " + clientSocket + " | Tarefa: lsdir");
+					
+					StringBuilder resposta = new StringBuilder();
+					
+					/*get data from current directory and create string*/
+					File dir = new File(clientPath);
+					File[] files = dir.listFiles();
+				    for (File file : files) {
+				        if (file.isDirectory()) {
+				            resposta.append("\ndiretorio: \n");
+				        } else {
+				        	resposta.append("\n     arquivo: \n");
+				        }
+				        resposta.append(file.getCanonicalPath());
+				    }
+				    
+				    /*Send answer to client*/
+					out.writeUTF(resposta.toString() + "/n");
+			        out.flush();
+				}
+				else if (data.contains("sendfile")){
+					out.writeUTF("Enviar arquivo para o servidor");
+				}
+				else if (data.contains("exit")){
+					out.writeUTF("terminando execucao com servidor...");
+					clientSocket.close();
+				}
+				else {
+					out.writeUTF("Comando nao reconhecido pelo servidor");
+				}
 			}
 			
 		}
