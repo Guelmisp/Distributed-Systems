@@ -25,9 +25,11 @@ public class TCPClient {
 			DataInputStream in = new DataInputStream( s.getInputStream());
 			
 			DataOutputStream out = new DataOutputStream( s.getOutputStream());
+			@SuppressWarnings("resource")
 			Scanner scanner = new Scanner(System.in);
 
 			while(true){
+				System.out.printf("> ");
 				comando = scanner.nextLine();
 				/*close client*/
 				if (comando.contains("exit")){
@@ -59,7 +61,9 @@ public class TCPClient {
 							/*verify*/
 							System.out.println(in.readUTF());
 							
-						} else {
+						} else if (comando.contains("exit")) {
+							System.out.println("Encerrando aplicacao");
+						}else {
 							System.out.println("Servidor nao esta pronto para receber arquivo.");
 						}
 						

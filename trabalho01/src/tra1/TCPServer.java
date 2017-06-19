@@ -1,12 +1,12 @@
 package tra1;
 
 import java.net.*;
-import java.util.Scanner;
 import java.io.*;
 public class TCPServer {
 	public static void main (String args[]) {
 		try{
 			int serverPort = 7897; // the server port
+			@SuppressWarnings("resource")
 			ServerSocket listenSocket = new ServerSocket(serverPort);
 			while(true) {
 				Socket clientSocket = listenSocket.accept();
@@ -38,8 +38,8 @@ class Connection extends Thread {
 	public void run(){
 		
 		/*Configuration UFOPServer for new Client*/
-		String mainPath = "UFOPDrive/";
-		String clientPath = mainPath + clientSocket.getPort() + "/";
+		String mainPath = "UFOPDrive" + System.getProperty("file.separator");;
+		String clientPath = mainPath + clientSocket.getPort() + System.getProperty("file.separator");;
 		new File(clientPath).mkdirs();
 		
 		/*setup to receive file*/
@@ -50,12 +50,12 @@ class Connection extends Thread {
 		try {
 			while(true){
 				
-				System.out.println("Servidor pronto...");
+				System.out.println("Esperando Cliente...");
 				String data = in.readUTF();	  
 				
 				if(data.contains("mkdir")){
 					System.out.println("Cliente: " + clientSocket + " | Tarefa: mkdir");
-					String directoryName = data.replaceAll("mkdir", "");
+					String directoryName = data.replaceAll("mkdir ", "");
 					
 					new File(clientPath + directoryName).mkdir();
 					out.writeUTF("Diretorio:" + directoryName + " criado");
@@ -88,7 +88,7 @@ class Connection extends Thread {
 						System.out.println("Cliente: " + clientSocket + " | Tarefa: sendfile");
 						/*get file name*/
 						String filePath =  data.replaceAll("sendfile", "");
-						String[] parts = filePath.split("/");
+						String[] parts = filePath.split(System.getProperty("file.separator"));
 						String fileName = clientPath + parts[parts.length-1];
 						
 						/*tell client to send the file*/
@@ -112,12 +112,7 @@ class Connection extends Thread {
 						if (bos != null) bos.close();
 						if (fos != null) fos.close();
 					}
-				}
-				else if (data.contains("exit")){
-					out.writeUTF("terminando execucao com servidor...");
-					clientSocket.close();
-				}
-				else {
+				}else {
 					out.writeUTF("Comando nao reconhecido pelo servidor");
 				}
 			}
